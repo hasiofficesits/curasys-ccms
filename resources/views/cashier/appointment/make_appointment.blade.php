@@ -45,6 +45,7 @@
                                 <th>Number</th>
                                 <th>Date</th>
                                 <th>Patient</th>
+                                <th>Doctor</th>
                                 <th>Que</th>
                                 <th>Status</th>
                                 <th>SMS Alert</th>
@@ -71,13 +72,28 @@
                 <div class="modal-body">
                     <div class="row g-2">
                         <div class="col-lg-6">
+                            <label for="colFormLabel" class="col-form-label">Select Doctor : </label>
+                            <select id="doctor_select" name="doctor_id" class="form-control">
+                                <option value="">Select Doctor</option>
+                                @foreach($all_doctors as $doctor)
+                                    <option value="{{ $doctor->ID }}">{{ $doctor->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-6"></div>
+                        
+                        <div class="col-lg-6">
                             <div class="row">
-                                <label for="colFormLabel" class="col-sm-4 col-form-label">Appointment No</label>
+                                <label for="colFormLabel" class="col-sm-4 ps-4 col-form-label">Next Appoinment No : </label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="next_app_number" value="{{ $next_app_number }}" disabled>
+                                    <input type="text" id="queue_number" name="queue_number" readonly class="form-control">
                                 </div>
                             </div>
                         </div>
+
+                        
+
+                       
                         <!--end col-->
                         <div class="col-lg-6">
                             <div class="row">
@@ -376,8 +392,12 @@
                     },
                 },
                 {
-                    data: 'DaiyCount',
-                    name: 'DaiyCount',
+                    data: 'doctor_name',
+                    name: 'doctor',
+                },
+                {
+                    data: 'DocQueueNo',
+                    name: 'DocQueueNo',
                 },
                 {
                     data: 'Status',
@@ -550,10 +570,11 @@
         };
 
         function save_appointment() {
-            let app_no = $("#next_app_number").val();
+            let app_no = $("#queue_number").val();
             let app_date = $("#date").dxDateBox("instance").option('value');
             let patient_id = selected_patient;
             let complaint = $("#complaint").val();
+            let doctor_id = $("#doctor_select").val();
 
             $("#btn_save_appointment").attr("disabled", true);
 
@@ -564,7 +585,8 @@
                     "app_no":app_no,
                     "app_date": app_date,
                     "patient_id": patient_id,
-                    "complaint": complaint
+                    "complaint": complaint,
+                    "doctor_id":doctor_id
                 },
                 "success": function(response) {
                     if (response.success) {
@@ -664,5 +686,27 @@
                 }
             })
         }
+
+        document.getElementById('doctor_select').addEventListener('change', function() {
+            var doctorId = this.value;
+            
+            if (doctorId) {
+                fetch('/cashier/get-doctor-queue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        date: '{{ $current_date }}'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('queue_number').value = data.next_queue_number;
+                });
+            }
+        });
     </script>
 @endsection
