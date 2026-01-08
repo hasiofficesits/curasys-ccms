@@ -19,4 +19,10 @@ class TblGrnBody extends Model
     {
         return $this->hasOne(TblStockPharma::class, 'ID', 'ItemID');
     }
+
+    public function header()
+    {
+        // This links the body to the head using Grnno -> Grid
+        return $this->belongsTo(TblGrnHead::class, 'Grnno', 'Grid');
+    }
 }

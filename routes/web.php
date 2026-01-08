@@ -60,6 +60,10 @@ Route::middleware(['auth'])->group(function () {
     
     //------------MANAGEMENT-------------
     Route::middleware(['role:0,1'])-> group(function () {
+        // load_management_dashboard
+        Route::get('load_management_dashboard', [DashboardController::class, 'load_management_dashboard'])->name('load_management_dashboard');
+        Route::get('/get-patient-chart-data', [DashboardController::class, 'get_patient_chart_data'])->name('get.patient.chart.data');
+
         //load_doctor
         Route::get('load_doctor', [DoctorController::class, 'load_doctor'])->name('load_doctor');
         //load_doctor_grid
@@ -202,6 +206,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:0,1,2'])-> group(function () {
         //------------CASHIER APPOINTMENT-------------
+
+        // load_cashier_dashboard
+        Route::get('load_cashier_dashboard', [DashboardController::class, 'load_cashier_dashboard'])->name('load_cashier_dashboard');
+
         //cashier_appointment_page
         Route::get('cashier_appointment_page', [CashierAppointmentController::class, 'cashier_appointment_page'])->name('cashier_appointment_page');
         //next_app_number
@@ -271,6 +279,8 @@ Route::middleware(['auth'])->group(function () {
     //------------PHARMACY STOCK-------------
     Route::middleware(['role:0,1,4'])-> group(function () {
         // Dashboard
+        Route::get('load_stock_dashboard', [DashboardController::class, 'load_stock_dashboard'])->name('load_stock_dashboard');
+        Route::get('get-lot-chart-data', [DashboardController::class, 'get_lot_chart_data'])->name('get.lot.chart.data');
 
         // load_monthly_sales_data_chart
         Route::get('load_sales_to_chart', [stockDashboardController::class, 'load_sales_to_chart'])->name('load_sales_to_chart');
