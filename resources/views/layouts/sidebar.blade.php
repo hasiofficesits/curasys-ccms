@@ -53,7 +53,7 @@
                         <div class="collapse menu-dropdown" id="sidebarDashboards">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="load_management_view" class="nav-link">Dashboard</a>
+                                    <a href="load_management_dashboard" class="nav-link">Dashboard</a>
                                 </li>
                             </ul>
                         </div>
@@ -132,7 +132,7 @@
 
                 @if(Session::get('menu')=="appointment")
                     
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarAppointment" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarAppointment">
                             <i class="ri-dashboard-2-line"></i> <span>Dashboard</span>
@@ -144,7 +144,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarAppointment" data-bs-toggle="collapse" role="button"
@@ -187,7 +187,7 @@
                         <div class="collapse menu-dropdown" id="sidebarDashboards">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="load_cashier_view" class="nav-link">Dashboard</a>
+                                    <a href="load_cashier_dashboard" class="nav-link">Dashboard</a>
                                 </li>
                             </ul>
                         </div>
@@ -247,7 +247,7 @@
                         <div class="collapse menu-dropdown" id="sidebarDashboards">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="load_stock_view" class="nav-link">Dashboard</a>
+                                    <a href="load_stock_dashboard" class="nav-link">Dashboard</a>
                                 </li>
                             </ul>
                         </div>
