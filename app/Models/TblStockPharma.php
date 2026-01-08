@@ -23,4 +23,8 @@ class TblStockPharma extends Model
     {
         return $this->hasOne(TblSupplier::class, 'ID', 'FKSupplier_ID');
     }
+    public function lots()
+    {
+        return $this->hasMany(TblStockPharmaLot::class, 'FKStock_ID', 'ID');
+    }
 }
