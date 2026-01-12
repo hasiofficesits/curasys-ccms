@@ -144,4 +144,130 @@ class stockReportController extends Controller
         $fileName = 'Expired_Stock_Lot_Report_' . now()->format('Ymd_His') . '.xlsx';
         return Excel::download(new ExpiredStockLotExport($filters), $fileName);
     }
+
+    // SALES REPORT
+    public function load_sales_report(Request $request)
+    {
+        return view('reports.stock.sales-report');
+    }
+
+    public function load_sales_report_grid(Request $request)
+    {
+        try {
+            $fromDate = $request->from_date;
+            $toDate = $request->to_date;
+            $status = $request->status;
+
+            $query = DB::table('tblinvoice') // Replace with your actual table name
+                ->whereBetween('date', [$fromDate, $toDate]);
+
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            $data = $query->orderBy('date', 'desc')->get();
+
+            $summary = [
+                'total_gross' => $data->sum('gross'),
+                'total_paid' => $data->sum('pay'),
+                'total_balance' => $data->sum('balance'),
+                'total_count' => $data->count()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'summary' => $summary
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    
+    }
+
+    function export_sales_report_excel(Request $request)
+    {
+        $fromDate = $request->from_date;
+        $toDate = $request->to_date;
+        $status = $request->status;
+
+        $fileName = 'Sales_Report_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new \App\Exports\SalesReportExport($fromDate, $toDate, $status), $fileName);
+    }
+
+    function load_day_report(Request $request)
+    {
+        return view('reports.stock.day-report');
+    }
+
+    function load_day_report_grid(Request $request)
+    {
+        try {
+            $reportDate = $request->report_date ?? $request->from_date;
+            
+            // Validate date is provided
+            if (!$reportDate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please provide a report date'
+                ], 400);
+            }
+
+            // Get invoice data for the specific day
+            $query = DB::table('tblinvoice')
+                ->where('date', $reportDate)
+                ->orderBy('invno', 'desc');
+            
+            $data = $query->get();
+
+            // Calculate summary statistics
+            $summary = [
+                'total_invoices' => $data->count(),
+                'total_amount' => $data->sum('total'),
+                'total_discount' => $data->sum('dis_val'),
+                'total_net' => $data->sum('net'),
+                'total_gross' => $data->sum('gross'),
+                'total_paid' => $data->sum('pay'),
+                'total_balance' => $data->sum('balance')
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'summary' => $summary,
+                'report_date' => $reportDate
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    function export_day_report_excel(Request $request)
+    {
+        try {
+            $reportDate = $request->report_date ?? $request->from_date;
+            
+            // Validate date is provided
+            if (!$reportDate) {
+                return back()->with('error', 'Please select a date');
+            }
+
+            // Format filename with the report date
+            $fileName = 'Day_Report_' . date('Ymd', strtotime($reportDate)) . '_' . now()->format('His') . '.xlsx';
+
+            return Excel::download(new \App\Exports\DayReportExport($reportDate), $fileName);
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error exporting report: ' . $e->getMessage());
+        }
+    }
 }

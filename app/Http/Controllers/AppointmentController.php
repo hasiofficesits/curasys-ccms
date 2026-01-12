@@ -35,7 +35,7 @@ class AppointmentController extends Controller
     {
         if ($request->ajax()) {
 
-            $opd_queue=TblOPDQueue::where('Status','!=', 'Done')->orderBy('ID', 'DESC')->with('patient')->limit(100)->get();
+            $opd_queue=TblOPDQueue::where('Status','!=', 'Done')->orderBy('ID', 'DESC')->with('patient')->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')->select('TblOPDQueue.*', 'users.name as doctor_name')->limit(100)->get();
 
             return datatables()->of($opd_queue)
                 ->addColumn('action', function ($row) {
@@ -123,22 +123,19 @@ class AppointmentController extends Controller
 
     public function save_appointment_table(Request $request)
     {
-        $que_id = $request->input('que_id');
-        $doctor_id = $request->input('doctor_id');
+            $que_id = $request->input('que_id');
 
-        if ($doctor_id == null) {
-            return response()->json(["success"=>false, "message"=>"Doctor Required!"]);
-        } else {
+        
             $que = TblOPDQueue::where('ID', $que_id)->first();
 
             $new_app = new TblOPDAppointment();
             $new_app->Date = Carbon::now();
             $new_app->Pt_ID = $que->Pt_id;
             $new_app->Pt_Table = "tblcustomer";
-            $new_app->Dr_ID = $doctor_id;
+            $new_app->Dr_ID = $que->Doctor;
             $new_app->Time = Carbon::now(new \DateTimeZone('Asia/Colombo'))->format('H:i');
             $new_app->Complain = $que->Complaint;
-            $new_app->Qno = $que->ID;
+            $new_app->Qno = $que_id;
             $new_app->Inv = null;
             $new_app->User_id = null;
             $new_app->Status = "Due";
@@ -146,7 +143,6 @@ class AppointmentController extends Controller
 
             $que->Status = "Due";
             $que->save();
-        }
 
 
         return response()->json(["success"=>true]);

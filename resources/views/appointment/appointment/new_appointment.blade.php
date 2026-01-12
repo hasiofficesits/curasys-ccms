@@ -45,6 +45,7 @@ Appointment
                                 <th>ID</th>
                                 <th>Date</th>
                                 <th>Que</th>
+                                <th>Doctor</th>
                                 <th>Patient</th>
                                 <th>Complaint</th>
                                 <th>Action</th>
@@ -71,16 +72,6 @@ Appointment
                     <input type="hidden" class="form-control" id="que_id">
 
                     <p>Do you want to make appointment ?</p>
-                    <div class="row g-2">
-                        <div class="col-lg-12">
-                            <div class="row">
-                                <label for="colFormLabel" class="col-sm-3 col-form-label">Doctor :</label>
-                                <div class="col-sm-9">
-                                    <div id="doctor" class="form-control-sm"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                 </div>
                 <div class="modal-footer">
@@ -195,31 +186,6 @@ Appointment
             }
         });
 
-        load_doctor();
-
-        $('#doctor').dxSelectBox({
-            dataSource: doctor,
-            displayExpr: 'Name',
-            valueExpr: 'DID',
-            itemTemplate: function(data) {
-                return data.DID + " - " + data.Name;
-            },
-            searchEnabled: true,
-            searchExpr: ["DID", "Name"]
-        });
-
-        function load_doctor() {
-            $.ajax({
-                url: "{{ route('load_doctor_appo') }}",
-                method: "GET",
-                success: function(response) {
-                    // console.log(response)
-                    doctor = response.data
-                    $('#doctor').dxSelectBox("instance").option("dataSource", doctor);
-                }
-            })
-        }
-
         var otable_appointment = $("#otable_appointment").DataTable({
             processing: true,
             serverSide: true,
@@ -243,8 +209,12 @@ Appointment
                     name: 'Date',
                 },
                 {
-                    data: 'DaiyCount',
-                    name: 'DaiyCount',
+                    data: 'DocQueueNo',
+                    name: 'DocQueueNo',
+                },
+                {
+                    data: 'doctor_name',
+                    name: 'doctor_name',
                 },
                 {
                     data: 'patient.FullName',
@@ -296,12 +266,11 @@ Appointment
             var data = otable_appointment.row($(this).parents('tr')).data();
 
             $("#que_id").val(data.ID);
+
             $("#ask_appointment_modal").modal("show");
         });
 
         function make_appointment() {
-            let que_id = $("#que_id").val();
-            let doctor_id = $('#doctor').dxSelectBox("instance").option("value");
 
             $("#btn_make_appointment").attr("disabled", true);
 
@@ -309,8 +278,7 @@ Appointment
                 "url": "{{ route('save_appointment_table') }}",
                 "method": "POST",
                 "data": {
-                    "que_id":que_id,
-                    "doctor_id":doctor_id
+                    que_id: $("#que_id").val(),
                 },
                 "success": function(response) {
                     if (response.success) {
