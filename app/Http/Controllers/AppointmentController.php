@@ -34,22 +34,49 @@ class AppointmentController extends Controller
     public function load_app_queue_grid(Request $request)
     {
         if ($request->ajax()) {
+            
+            $user = $request->session()->get('user');
+            $userRole = $user['role'] ?? null;
+            
+            if ($userRole == 0 || $userRole == 1) {
+                $query = TblOPDQueue::where('Status', '!=', 'Done')
+                    ->with('patient')
+                    ->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
+                    ->select('TblOPDQueue.*', 'users.name as doctor_name');
+                    
+            } else if ($userRole == 3) {
+                $docId = $user['Doc_Id'] ?? null;  
+                
+                if (!$docId) {
+                    return datatables()->of(collect([]))->toJson();
+                }
+                
+                $query = TblOPDQueue::where('Status', '!=', 'Done')
+                    ->where('TblOPDQueue.Doctor', $docId)
+                    ->whereDate('TblOPDQueue.Date', today()) 
+                    ->with('patient')
+                    ->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
+                    ->select('TblOPDQueue.*', 'users.name as doctor_name');
+                    
+            } else {
+                return datatables()->of(collect([]))->toJson();
+            }
 
-            $opd_queue=TblOPDQueue::where('Status','!=', 'Done')->orderBy('ID', 'DESC')->with('patient')->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')->select('TblOPDQueue.*', 'users.name as doctor_name')->limit(100)->get();
+            $opd_queue = $query->orderBy('TblOPDQueue.ID', 'DESC')
+                ->limit(100)
+                ->get();
 
             return datatables()->of($opd_queue)
                 ->addColumn('action', function ($row) {
                     if ($row->Status == "Due") {
-                        // $appointment = TblOPDAppointment::where('Qno', $row->ID)->first();
                         $html = '<a class="btn btn-success btn-sm waves-effect waves-light btn-select" href="/select_chennel_page/'.$row->ID.'">Select</a>';
-                    }  else if($row->Status == "Done") {
+                    } else if($row->Status == "Done") {
                         $html = '<button class="btn btn-warning btn-sm waves-effect waves-light btn-done">Done</button> ';
                     } else if($row->Status == "True") {
                         $html = '<button class="btn btn-warning btn-sm waves-effect waves-light btn-done">Done</button> ';
                     } else {
                         $html = '<button class="btn btn-info btn-sm waves-effect waves-light btn-make">Make Appointment</button> ';
                     }
-                    // $html = '<button class="btn btn-success btn-sm waves-effect waves-light btn-select">Select</button> ';
                     
                     return $html;
             })->toJson();
