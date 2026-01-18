@@ -34,22 +34,49 @@ class AppointmentController extends Controller
     public function load_app_queue_grid(Request $request)
     {
         if ($request->ajax()) {
+            
+            $user = $request->session()->get('user');
+            $userRole = $user['role'] ?? null;
+            
+            if ($userRole == 0 || $userRole == 1) {
+                $query = TblOPDQueue::where('Status', '!=', 'Done')
+                    ->with('patient')
+                    ->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
+                    ->select('TblOPDQueue.*', 'users.name as doctor_name');
+                    
+            } else if ($userRole == 3) {
+                $docId = $user['Doc_Id'] ?? null;  
+                
+                if (!$docId) {
+                    return datatables()->of(collect([]))->toJson();
+                }
+                
+                $query = TblOPDQueue::where('Status', '!=', 'Done')
+                    ->where('TblOPDQueue.Doctor', $docId)
+                    ->whereDate('TblOPDQueue.Date', today()) 
+                    ->with('patient')
+                    ->leftjoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
+                    ->select('TblOPDQueue.*', 'users.name as doctor_name');
+                    
+            } else {
+                return datatables()->of(collect([]))->toJson();
+            }
 
-            $opd_queue=TblOPDQueue::where('Status','!=', 'Done')->orderBy('ID', 'DESC')->with('patient')->limit(100)->get();
+            $opd_queue = $query->orderBy('TblOPDQueue.ID', 'DESC')
+                ->limit(100)
+                ->get();
 
             return datatables()->of($opd_queue)
                 ->addColumn('action', function ($row) {
                     if ($row->Status == "Due") {
-                        // $appointment = TblOPDAppointment::where('Qno', $row->ID)->first();
                         $html = '<a class="btn btn-success btn-sm waves-effect waves-light btn-select" href="/select_chennel_page/'.$row->ID.'">Select</a>';
-                    }  else if($row->Status == "Done") {
+                    } else if($row->Status == "Done") {
                         $html = '<button class="btn btn-warning btn-sm waves-effect waves-light btn-done">Done</button> ';
                     } else if($row->Status == "True") {
                         $html = '<button class="btn btn-warning btn-sm waves-effect waves-light btn-done">Done</button> ';
                     } else {
                         $html = '<button class="btn btn-info btn-sm waves-effect waves-light btn-make">Make Appointment</button> ';
                     }
-                    // $html = '<button class="btn btn-success btn-sm waves-effect waves-light btn-select">Select</button> ';
                     
                     return $html;
             })->toJson();
@@ -123,22 +150,19 @@ class AppointmentController extends Controller
 
     public function save_appointment_table(Request $request)
     {
-        $que_id = $request->input('que_id');
-        $doctor_id = $request->input('doctor_id');
+            $que_id = $request->input('que_id');
 
-        if ($doctor_id == null) {
-            return response()->json(["success"=>false, "message"=>"Doctor Required!"]);
-        } else {
+        
             $que = TblOPDQueue::where('ID', $que_id)->first();
 
             $new_app = new TblOPDAppointment();
             $new_app->Date = Carbon::now();
             $new_app->Pt_ID = $que->Pt_id;
             $new_app->Pt_Table = "tblcustomer";
-            $new_app->Dr_ID = $doctor_id;
+            $new_app->Dr_ID = $que->Doctor;
             $new_app->Time = Carbon::now(new \DateTimeZone('Asia/Colombo'))->format('H:i');
             $new_app->Complain = $que->Complaint;
-            $new_app->Qno = $que->ID;
+            $new_app->Qno = $que_id;
             $new_app->Inv = null;
             $new_app->User_id = null;
             $new_app->Status = "Due";
@@ -146,7 +170,6 @@ class AppointmentController extends Controller
 
             $que->Status = "Due";
             $que->save();
-        }
 
 
         return response()->json(["success"=>true]);

@@ -370,12 +370,12 @@
                         <div class="collapse menu-dropdown" id="sidebarSales">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">Report 1</a>
+                                    <a href="load_sales_report" class="nav-link">Sales Report</a>
                                 </li>
                             </ul>
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="#" class="nav-link">Report 2</a>
+                                    <a href="load_day_report" class="nav-link">Day Report</a>
                                 </li>
                             </ul>
                         </div>

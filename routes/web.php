@@ -212,6 +212,8 @@ Route::middleware(['auth'])->group(function () {
 
         //cashier_appointment_page
         Route::get('cashier_appointment_page', [CashierAppointmentController::class, 'cashier_appointment_page'])->name('cashier_appointment_page');
+        //get_doctor_next_queue
+        Route::post('/cashier/get-doctor-queue', [CashierAppointmentController::class, 'get_doctor_next_queue'])->name('cashier.get_doctor_queue');
         //next_app_number
         Route::get('next_app_number',[CashierAppointmentController::class, 'next_app_number'])->name('next_app_number');
         //load_patient_select_grid
@@ -397,6 +399,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('export_stock_report_excel', [stockReportController:: class, 'export_stock_report_excel'])->name('export_stock_report_excel');
         // export_expired_lot_stock
         Route::get('export_expired_lot_stock', [stockReportController::class, 'export_expired_lot_stock'])->name('export_expired_lot_stock');
+        // load_sales_report
+        Route::get('load_sales_report', [stockReportController::class, 'load_sales_report'])->name('load_sales_report');
+        // load_sales_report_grid
+        Route::post('load_sales_report_grid', [stockReportController::class, 'load_sales_report_grid'])->name('sales.report.data');
+        // export_sales_report_excel
+        Route::get('export_sales_report_excel', [stockReportController:: class, 'export_sales_report_excel'])->name('export_sales_report_excel');
+        // load_day_report
+        Route::get('load_day_report', [stockReportController::class, 'load_day_report'])->name('load_day_report');
+        // load_day_report_grid
+        Route::get('load_day_report_grid', [stockReportController::class, 'load_day_report_grid'])->name('load_day_report_grid');
+        // export_day_report_excel
+        Route::get('export_day_report_excel', [stockReportController:: class, 'export_day_report_excel'])->name('export_day_report_excel');
 
 
 

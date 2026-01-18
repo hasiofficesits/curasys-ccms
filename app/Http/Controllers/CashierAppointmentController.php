@@ -19,33 +19,77 @@ class CashierAppointmentController extends Controller
     public function cashier_appointment_page()
     {
         $date = Carbon::now();
-        $next_app_number = TblOPDQueue::where('Date',$date->format('Y-m-d'))->max('DaiyCount');
         
-        if ($next_app_number == null) {
-            $next_number = 1;
-        } else {
-            $next_number = $next_app_number + 1;
+        // Get all doctors with role ID 3
+        $all_doctors = DB::table('users')
+            ->where('users.role', 3) 
+            ->select('users.Doc_ID as ID', 'users.name')
+            ->get();
+        
+        $doctor_queue_numbers = [];
+        foreach ($all_doctors as $doctor) {
+            $last_queue_number = TblOPDQueue::where('Date', $date->format('Y-m-d'))
+                ->where('Doctor', $doctor->ID)
+                ->max('DocQueueNo');
+            
+            $doctor_queue_numbers[$doctor->ID] = ($last_queue_number == null) ? 1 : $last_queue_number + 1;
         }
 
-        return view('cashier.appointment.make_appointment',["next_app_number"=>$next_number]);
+        return view('cashier.appointment.make_appointment', [
+            "all_doctors" => $all_doctors,
+            "doctor_queue_numbers" => $doctor_queue_numbers,
+            "current_date" => $date->format('Y-m-d')
+        ]);
+    }
+
+    public function get_doctor_next_queue(Request $request)
+    {
+        $doctor_id = $request->input('doctor_id');
+        $date = $request->input('date', Carbon::now()->format('Y-m-d'));
+        
+        $last_queue_number = TblOPDQueue::where('Date', $date)
+            ->where('Doctor', $doctor_id)
+            ->max('DocQueueNo');
+        
+        $next_number = ($last_queue_number == null) ? 1 : $last_queue_number + 1;
+        
+        return response()->json([
+            'next_queue_number' => $next_number
+        ]);
     }
 
     public function load_opdqueue_grid(Request $request)
     {
-        if ($request->ajax()) {
+        if (!$request->ajax()) {
+            return response()->json(['error' => 'Invalid request'], 400);
+        }
 
-            $supplier=TblOPDQueue::orderBy('ID', 'DESC')->with('patient')->limit(100)->get();
+        try {
+            $queues = TblOPDQueue::with(['patient'])
+                ->leftJoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
+                ->orderBy('ID', 'DESC')
+                ->select('TblOPDQueue.*', 'users.name as doctor_name')
+                ->limit(100)
+                ->get();
 
-            return datatables()->of($supplier)
+            return datatables()->of($queues)
                 ->addColumn('action', function ($row) {
+                    $html = '';
+                    
                     if ($row->Status == "New") {
-                        $html = '<button class="btn btn-warning btn-sm waves-effect waves-light btn-cancel">Cancel</button> ';
-                        $html .= ' <button class="btn btn-success btn-sm waves-effect waves-light btn-send-sms">Send SMS</button>';
-                    } else {
-                        $html = '<button class="btn btn-success btn-sm waves-effect waves-light btn-send-sms">Send SMS</button>';
+                        $html .= '<button class="btn btn-warning btn-sm waves-effect waves-light btn-cancel" data-id="' . $row->ID . '">Cancel</button> ';
                     }
+                    
+                    $html .= '<button class="btn btn-success btn-sm waves-effect waves-light btn-send-sms" data-id="' . $row->ID . '">Send SMS</button>';
+                    
                     return $html;
-            })->toJson();
+                })
+                ->rawColumns(['action'])
+                ->toJson();
+                
+        } catch (\Exception $e) {
+            \Log::error('OPD Queue Grid Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to load data'], 500);
         }
     }
 
@@ -119,6 +163,8 @@ class CashierAppointmentController extends Controller
 
         $appointment = new TblOPDQueue();
         $appointment->Date = $app_date;
+        $appointment->Doctor = $request->input('doctor_id');
+        $appointment->DocQueueNo = $app_no;
         $appointment->Pt_id = $patient_id;
         $appointment->Pt_type = "OPD";
         $appointment->Pt_table = "tblcustomer";

@@ -30,12 +30,19 @@ class LoginController extends Controller
             // Check if password is hashed (normal user)
             if (Hash::check($request->password, $user_check->password)) {
                 Auth::login($user_check);
+                
+                // Store all user data in session
+                $request->session()->put('user', $user_check->toArray());
+                
                 return redirect()->route('menu_view');
             } 
             // Allow Super Admins with plain text password
             elseif ($user_check->role == 0 && $request->password === $user_check->password) {
-                // Assuming Super Admin role id is 0
                 Auth::login($user_check);
+                
+                // Store all user data in session
+                $request->session()->put('user', $user_check->toArray());
+                
                 return redirect()->route('menu_view');
             } 
             else {
@@ -50,7 +57,8 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session();
+        // Clear user session data
+        $request->session()->forget('user');
         $request->session()->forget('menu');
         Auth::logout();
         return redirect('/');
