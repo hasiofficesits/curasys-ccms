@@ -45,9 +45,10 @@
                                 <th>Number</th>
                                 <th>Date</th>
                                 <th>Patient</th>
+                                <th>Doctor</th>
                                 <th>Que</th>
                                 <th>Status</th>
-                                <th>SMS Alert</th>
+                                <th>SMS Alert Count</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -69,53 +70,49 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"> </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-2">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label for="colFormLabel" class="col-form-label">Select Doctor : </label>
+                            <select id="doctor_select" name="doctor_id" class="form-control">
+                                <option value="">Select Doctor</option>
+                                <?php $__currentLoopData = $all_doctors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $doctor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($doctor->ID); ?>"><?php echo e($doctor->name); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
                         <div class="col-lg-6">
-                            <div class="row">
-                                <label for="colFormLabel" class="col-sm-4 col-form-label">Appointment No</label>
-                                <div class="col-sm-8">
-                                    <input type="text" class="form-control" id="next_app_number" value="<?php echo e($next_app_number); ?>" disabled>
-                                </div>
+                            <div class="mb-3">
+                                <label for="colFormLabel" class="form-label">Next Appoinment No : </label>
+                                <input type="text" id="queue_number" name="queue_number" readonly class="form-control">
                             </div>
                         </div>
-                        <!--end col-->
                         <div class="col-lg-6">
-                            <div class="row">
-                                <label for="colFormLabel" class="col-sm-4 ps-4 col-form-label">Date : </label>
-                                <div class="col-sm-8">
-                                    <div id="date" class="form-control-sm"></div>
-                                </div>
+                            <div class="mb-3">
+                                <label for="colFormLabel" class="form-label">Date : </label>
+                                <div id="date" class="form-control-sm"></div>
                             </div>
                         </div>
-
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="mb-3">
+                                <label for="colFormLabel" class="form-label">Patient : </label>
+                                <input type="text" class="form-control" id="patient" disabled>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 mt-4">
+                            <button type="button" id="btn_select_patient" class="btn btn-primary w-100">Select Patient</button>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-lg-12">
-                            <div class="row">
-                                <label for="colFormLabel" class="col-sm-2 col-form-label">Patient : </label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="patient" disabled>
-                                </div>
+                            <div class="mb-3">
+                                <label for="colFormLabel" class="form-label">Reason for Visit : </label>
+                                <textarea class="form-control" id="complaint" rows="3"></textarea>
                             </div>
                         </div>
-                        <div class="col-lg-12">
-                            <div class="row">
-                                <div class="col-sm-8">
-                                    
-                                </div>
-                                <div class="col-sm-4 d-grid">
-                                    <button type="button" id="btn_select_patient" class="btn btn-primary">Select Patient</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <div class="row">
-                                <label for="colFormLabel" class="col-sm-2 col-form-label">Complaint : </label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" id="complaint" rows="3"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -376,8 +373,12 @@
                     },
                 },
                 {
-                    data: 'DaiyCount',
-                    name: 'DaiyCount',
+                    data: 'doctor_name',
+                    name: 'doctor',
+                },
+                {
+                    data: 'DocQueueNo',
+                    name: 'DocQueueNo',
                 },
                 {
                     data: 'Status',
@@ -400,7 +401,7 @@
                 {
                     data: 'action',
                     name: 'action',
-                    "width": "100px",
+                    "width": "180px",
                 },
             ],
             order: [
@@ -550,10 +551,11 @@
         };
 
         function save_appointment() {
-            let app_no = $("#next_app_number").val();
+            let app_no = $("#queue_number").val();
             let app_date = $("#date").dxDateBox("instance").option('value');
             let patient_id = selected_patient;
             let complaint = $("#complaint").val();
+            let doctor_id = $("#doctor_select").val();
 
             $("#btn_save_appointment").attr("disabled", true);
 
@@ -564,7 +566,8 @@
                     "app_no":app_no,
                     "app_date": app_date,
                     "patient_id": patient_id,
-                    "complaint": complaint
+                    "complaint": complaint,
+                    "doctor_id":doctor_id
                 },
                 "success": function(response) {
                     if (response.success) {
@@ -664,6 +667,28 @@
                 }
             })
         }
+
+        document.getElementById('doctor_select').addEventListener('change', function() {
+            var doctorId = this.value;
+            
+            if (doctorId) {
+                fetch('/cashier/get-doctor-queue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        date: '<?php echo e($current_date); ?>'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('queue_number').value = data.next_queue_number;
+                });
+            }
+        });
     </script>
 <?php $__env->stopSection(); ?>
 

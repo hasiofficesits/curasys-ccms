@@ -390,7 +390,10 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-light" 
+                        onclick="window.location.href='<?php echo e(route('load_due_inv_page')); ?>'">
+                        Close
+                    </button>
                     <button type="button" id="btn_print_invoice" onclick="print_invoice()"
                         class="btn btn-success">Print</button>
                 </div>
@@ -1365,7 +1368,9 @@
 
             printJS("/invoice/" + print_size + "/" + invoice_number);
 
-            // location.href = '/load_due_inv_page';
+            setTimeout(function() {
+                window.location.href = "<?php echo e(route('load_due_inv_page')); ?>"; 
+            }, 1000);
         }
 
         function reset_inputs() {

@@ -279,45 +279,26 @@ class DueInvController extends Controller
                     $lot->QTY = $new_qty;
                     $lot->save();
                 } else {
-
-                    // if ($value->StockServiceID == 0) {
-
-                    //     $body = new TblInvoiceBody();
-                    //     $body->invno = $invoice->invno;
-                    //     $body->sn = 0;
-                    //     $body->Lot_Id = null;
-                    //     $body->code = "Consultation Fee";
-                    //     $body->description = $value->Description;
-                    //     $body->rate = $value->Unit_Price;
-                    //     $body->dis_val = null;
-                    //     $body->qty = $value->Qty;
-                    //     $body->total = $value->Total;
-                    //     $body->save();
-
-                    //     $service = TblOPDService::where('ID',3)->first();
-                    //     $narration = TblNarration::where('ID', $service->Ledgeracc)->first();
-                        
-                    //     //Service Sales ---- CR
-                    //     $phm_gl = new TblGL();
-                    //     $phm_gl->Date = $trn_date;
-                    //     $phm_gl->Acc = $narration->Acc;
-                    //     $phm_gl->AccCode = $narration->ID;
-                    //     $phm_gl->Description = "Appoitment Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
-                    //     $phm_gl->Reference = $invoice->invno;
-                    //     $phm_gl->ReferenceType = "Invoice";
-                    //     $phm_gl->Dr = 0;
-                    //     $phm_gl->Cr = $value->Total;
-                    //     $phm_gl->save();
-
-                    // } else {
                         $service = TblOPDService::where('ID', $value->StockServiceID)->first();
+
+                        // if (!$service) {
+                        //     DB::rollBack();
+                        //     return response()->json(['success' => false, 'message' => "Service ID {$value->StockServiceID} not found in database."]);
+                        // }
                         $narration = TblNarration::where('ID', $service->Ledgeracc)->first();
-                        
-                        //Service Sales ---- CR
+
+                        $gl_acc_name = $narration ? $narration->Acc : null;
+                        $gl_acc_id   = $narration ? $narration->ID : null;
+
+                        // if (!$narration) {
+                        //     DB::rollBack();
+                        //     return response()->json(['success' => false, 'message' => "Configuration Error: The service '{$service->Name}' is linked to a Ledger Account (ID: {$service->Ledgeracc}) that does not exist. Please update this service in settings."]);
+                        // }
+
                         $phm_gl = new TblGL();
                         $phm_gl->Date = $trn_date;
-                        $phm_gl->Acc = $narration->Acc;
-                        $phm_gl->AccCode = $narration->ID;
+                        $phm_gl->Acc = $gl_acc_name;
+                        $phm_gl->AccCode = $gl_acc_id;
                         $phm_gl->Description = "Appoitment Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
                         $phm_gl->Reference = $invoice->invno;
                         $phm_gl->ReferenceType = "Invoice";
