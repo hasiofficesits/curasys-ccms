@@ -275,6 +275,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('remove_due_inv', [DueInvController::class, 'remove_due_inv'])->name('remove_due_inv');
         //load_selected_due_inv_data
         Route::get('load_selected_due_inv_data/{id}', [DueInvController::class, 'load_selected_due_inv_data'])->name('load_selected_due_inv_data');
+
+        // load_lot_details_to_invoice
+        Route::post('load_lot_details_to_invoice', [SalesController::class, 'load_lot_details_to_invoice'])->name('load_lot_details_to_invoice');
     });
 
 

@@ -15,7 +15,6 @@ use App\Models\TblOPDService;
 use App\Models\TblOPDAppointment;
 use App\Models\User;
 use App\Models\TblOPDQueue;
-
 use Carbon\Carbon;
 
 class MenuViewController extends Controller
@@ -75,29 +74,34 @@ class MenuViewController extends Controller
     public function load_cashier_view(Request $request)
     {
         $request->session()->put('menu', "cashier");
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        $date = Carbon::now();
+        
+        // Get all doctors with role ID 3
+        $all_doctors = DB::table('users')
+            ->where('users.role', 3) 
+            ->select('users.Doc_ID as ID', 'users.name')
+            ->get();
+        
+        $doctor_queue_numbers = [];
+        foreach ($all_doctors as $doctor) {
+            $last_queue_number = TblOPDQueue::where('Date', $date->format('Y-m-d'))
+                ->where('Doctor', $doctor->ID)
+                ->max('DocQueueNo');
+            
+            $doctor_queue_numbers[$doctor->ID] = ($last_queue_number == null) ? 1 : $last_queue_number + 1;
+        }
 
-        $monthly_channel_income = TblInvoice::whereYear('date', $currentYear)
-        ->whereMonth('date', $currentMonth)
-        ->where('status', 'Paid')
-        ->where('typecode', 'app_inv')
-        ->sum('net');
-
-        $monthly_pharmacy_income = TblInvoice::whereYear('date', $currentYear)
-        ->whereMonth('date', $currentMonth)
-        ->where('status', 'Paid')
-        ->where('typecode', 'phm_inv')
-        ->sum('net');
-
-
-        return view('cashier.dashboard.cashier-dashboard', compact('monthly_channel_income', 'monthly_pharmacy_income'));
+        return view('cashier.appointment.make_appointment', [
+            "all_doctors" => $all_doctors,
+            "doctor_queue_numbers" => $doctor_queue_numbers,
+            "current_date" => $date->format('Y-m-d')
+        ]);
     }
 
     public function load_report_view(Request $request)
     {
         $request->session()->put('menu', "reports");
-        return view('reports.dashboard');
+        return view('reports.stock.current-stock');
     }
 
     public function load_stock_view(Request $request)

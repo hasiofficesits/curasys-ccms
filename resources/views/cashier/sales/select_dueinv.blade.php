@@ -1517,7 +1517,7 @@
             console.log(pharm_item);
 
             $.ajax({
-                url: "{{ route('load_lot_details') }}",
+                url: "{{ route('load_lot_details_to_invoice') }}",
                 method: "POST",
                 "data": {
                     "item_id": item_id,

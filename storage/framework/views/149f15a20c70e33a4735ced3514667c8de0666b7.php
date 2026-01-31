@@ -91,7 +91,7 @@
             </tr>
             <tr>
                 <td style="width: 50px">Name</td>
-                <td>: <?php echo e($invoice->customer->FullName); ?></td>
+                <td>: <?php echo e(optional($invoice->customer)->FullName ?? 'Cash'); ?></td>
             </tr>
         </table>
         <hr style="margin: 1px">

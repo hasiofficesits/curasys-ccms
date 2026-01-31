@@ -2371,10 +2371,10 @@
 
             let dose = $("#dose").dxNumberBox('instance').option('value');
             let unit = $('#unit').dxSelectBox("instance").option("value");
-            let unit_name = unit.Name;
+            let unit_name = unit?.Name || "";
 
             let frequency = $('#frequency').dxSelectBox("instance").option("value");
-            let frequency_name = frequency.Freq_Name;
+            let frequency_name = frequency?.Freq_Name || "";
 
             let period = $("#period").dxNumberBox('instance').option('value');
             let dose_qty = $("#dose_qty").dxNumberBox('instance').option('value');

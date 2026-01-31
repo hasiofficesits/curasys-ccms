@@ -91,7 +91,7 @@
             </tr>
             <tr>
                 <td style="width: 50px">Name</td>
-                <td>: {{ $invoice->customer->FullName }}</td>
+                <td>: {{ optional($invoice->customer)->FullName ?? 'Cash' }}</td>
             </tr>
         </table>
         <hr style="margin: 1px">

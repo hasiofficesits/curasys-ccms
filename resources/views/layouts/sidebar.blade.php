@@ -179,7 +179,7 @@
 
                 @if(Session::get('menu')=="cashier")
                     
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarDashboards">
                             <i class="ri-dashboard-2-line"></i> <span>Dashboard</span>
@@ -191,7 +191,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarAppointment" data-bs-toggle="collapse" role="button"
@@ -329,7 +329,7 @@
 
                 @if(Session::get('menu')=="reports")
                     
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarDashboards">
                             <i class="ri-dashboard-2-line"></i> <span>Dashboard</span>
@@ -341,7 +341,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </li>
+                    </li> --}}
 
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarAppointment" data-bs-toggle="collapse" role="button"

@@ -69,6 +69,7 @@ class CashierAppointmentController extends Controller
                 ->leftJoin('users', 'tblopdqueue.Doctor', '=', 'users.Doc_ID')
                 ->orderBy('ID', 'DESC')
                 ->select('TblOPDQueue.*', 'users.name as doctor_name')
+                ->where('Status', '!=', 'Done')
                 ->limit(100)
                 ->get();
 

@@ -16,7 +16,6 @@
     <div class="layout-width">
         <div class="navbar-header">
             <div class="d-flex">
-                <!-- LOGO -->
                 <div class="navbar-brand-box horizontal-logo">
                     <a href="index" class="logo logo-dark">
                         <span class="logo-sm">
@@ -37,7 +36,8 @@
                     </a>
                 </div>
 
-                <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger" id="topnav-hamburger-icon">
+                <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn topnav-hamburger"
+                    id="topnav-hamburger-icon">
                     <span class="hamburger-icon">
                         <span></span>
                         <span></span>
@@ -45,7 +45,6 @@
                     </span>
                 </button>
 
-                <!-- App Search-->
                 <form class="app-search d-none d-md-block">
                     <div class="position-relative">
                         <input type="text" class="form-control" placeholder="Search..." autocomplete="off"
@@ -58,8 +57,17 @@
             </div>
 
             <div class="d-flex align-items-center">
+                <div class="ms-1 header-item d-none d-sm-flex me-3">
+                    <a href="<?php echo e(route('menu_view')); ?>" class="btn btn-success btn-icon waves-effect waves-light">
+                        <i class="ri-home-4-line"></i>
+                    </a>
+                </div>
+
                 <div class="ms-1 mt-3 header-item d-none d-sm-flex me-2">
-                    <p>Hello!!, <span class="fw-semibold me-3"><?php echo e(Auth::user()->name); ?></span>| <span class="badge bg-primary p-2 ms-3"><i class="las la-calendar me-1"></i>System Date :</span> <?php echo e(now()->format('d M, Y')); ?> <span class="badge bg-warning p-2 ms-3">System Time : </span><span id="live-time" class="ms-2 clock-box"></span> </p>
+                    <p>Hello!!, <span class="fw-semibold me-3"><?php echo e(Auth::user()->name); ?></span>| <span
+                            class="badge bg-primary p-2 ms-3"><i class="las la-calendar me-1"></i>System Date :</span>
+                        <?php echo e(now()->format('d M, Y')); ?> <span class="badge bg-warning p-2 ms-3">System Time : </span><span
+                            id="live-time" class="ms-2 clock-box"></span> </p>
                 </div>
 
                 <div class="ms-1 header-item d-none d-sm-flex">
@@ -69,7 +77,8 @@
                     </button>
                 </div>
                 <div class="ms-1 header-item d-none d-sm-flex">
-                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
+                    <button type="button"
+                        class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle light-dark-mode">
                         <i class='bx bx-moon fs-22'></i>
                     </button>
                 </div>
@@ -85,7 +94,6 @@
         let minutes = now.getMinutes();
         let seconds = now.getSeconds();
 
-        // Add leading zeros
         hours = hours < 10 ? '0' + hours : hours;
         minutes = minutes < 10 ? '0' + minutes : minutes;
         seconds = seconds < 10 ? '0' + seconds : seconds;
@@ -93,7 +101,7 @@
         document.getElementById('live-time').textContent = `${hours}:${minutes}:${seconds}`;
     }
 
-    // Update immediately and then every second
     updateTime();
     setInterval(updateTime, 1000);
-</script><?php /**PATH E:\BIT\Project\Project\CuraSys\resources\views/layouts/topbar.blade.php ENDPATH**/ ?>
+</script>
+<?php /**PATH E:\BIT\Project\Project\CuraSys\resources\views/layouts/topbar.blade.php ENDPATH**/ ?>

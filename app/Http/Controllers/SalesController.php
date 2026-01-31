@@ -37,6 +37,13 @@ class SalesController extends Controller
         return view('cashier.sales.sales',["next_inv_no"=>$next_number]);
     }
 
+    public function load_lot_details_to_invoice(Request $request)
+    {
+        $item_id = $request->input('item_id');
+        $lot = TblStockPharmaLot::where('FKStock_ID',$item_id)->where('Isdelete',0)->where('Exp_date','>',now())->get();
+        return response()->json(["success"=>true, "data"=>$lot]);
+    }
+
     public function load_next_inv(Request $request)
     {
         $next_inv = TblInvoice::max('invno');
@@ -166,7 +173,7 @@ class SalesController extends Controller
             $invoice->code = "inv";
             $invoice->typecode = "phm_inv";
             $invoice->date = $trn_date;
-            $invoice->cusid = $customer->ID;
+            $invoice->cusid = $customer ? $customer->ID : 0;
             $invoice->type = "Pharmacy Sales";
             $invoice->AccCode = $sales_account->AccCode;
             $invoice->TaxAcc = null;
@@ -220,7 +227,7 @@ class SalesController extends Controller
             $phm_gl->Date = $trn_date;
             $phm_gl->Acc = $sales_account->Acc;
             $phm_gl->AccCode = $sales_account->AccCode;
-            $phm_gl->Description = "Pharmacy Sales - Extra Income ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+            $phm_gl->Description = "Pharmacy Sales - Extra Income ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
             $phm_gl->Reference = $invoice->invno;
             $phm_gl->ReferenceType = "Invoice";
             $phm_gl->Dr = 0;
@@ -232,7 +239,7 @@ class SalesController extends Controller
             $phm_gl->Date = $trn_date;
             $phm_gl->Acc = $sales_account->Acc;
             $phm_gl->AccCode = $sales_account->AccCode;
-            $phm_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+            $phm_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
             $phm_gl->Reference = $invoice->invno;
             $phm_gl->ReferenceType = "Invoice";
             $phm_gl->Dr = 0;
@@ -244,7 +251,7 @@ class SalesController extends Controller
             $cos_gl->Date = $trn_date;
             $cos_gl->Acc = $cost_of_sales->Acc;
             $cos_gl->AccCode = $cost_of_sales->AccCode;
-            $cos_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+            $cos_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
             $cos_gl->Reference = $invoice->invno;
             $cos_gl->ReferenceType = "Invoice";
             $cos_gl->Dr = $cost_of_sale;
@@ -256,7 +263,7 @@ class SalesController extends Controller
             $stock_gl->Date = $trn_date;
             $stock_gl->Acc = $stock_account->Acc;
             $stock_gl->AccCode = $stock_account->AccCode;
-            $stock_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+            $stock_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
             $stock_gl->Reference = $invoice->invno;
             $stock_gl->ReferenceType = "Invoice";
             $stock_gl->Dr = 0;
@@ -269,7 +276,7 @@ class SalesController extends Controller
                 $stock_gl->Date = $trn_date;
                 $stock_gl->Acc = $given_discount->Acc;
                 $stock_gl->AccCode = $given_discount->AccCode;
-                $stock_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $stock_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $stock_gl->Reference = $invoice->invno;
                 $stock_gl->ReferenceType = "Invoice";
                 $stock_gl->Dr = $dis_val;
@@ -286,7 +293,7 @@ class SalesController extends Controller
                 $tbl_gl->Date = $trn_date;
                 $tbl_gl->Acc = $cash_ledger_info->Acc;
                 $tbl_gl->AccCode = $cash_ledger_info->ledgeracc;
-                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $tbl_gl->Reference = $invoice->invno;
                 $tbl_gl->ReferenceType = "Invoice";
                 $tbl_gl->Dr = $cash_amount;
@@ -315,7 +322,7 @@ class SalesController extends Controller
                 $tbl_gl->Date = $trn_date;
                 $tbl_gl->Acc = "Card Transaction - Non Realized";
                 $tbl_gl->AccCode = $narration_acc->AccCode;
-                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $tbl_gl->Reference = $invoice->invno;
                 $tbl_gl->ReferenceType = "Invoice";
                 $tbl_gl->Dr = $card_amount;
@@ -332,7 +339,7 @@ class SalesController extends Controller
                 $tbl_gl->Date = $trn_date;
                 $tbl_gl->Acc = $bank_transfer_branch;
                 $tbl_gl->AccCode = $bank->ledgeracc;
-                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $tbl_gl->Reference = $invoice->invno;
                 $tbl_gl->ReferenceType = "Invoice";
                 $tbl_gl->Dr = $bank_amount;
@@ -347,9 +354,9 @@ class SalesController extends Controller
                 $tblchq=new TblChq();
                 $tblchq->Date = $trn_date;
                 $tblchq->Narration = $narration_acc->ID;
-                $tblchq->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $tblchq->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $tblchq->ChqNo = $cheque_number;
-                $tblchq->PayBy = $customer->FullName;
+                $tblchq->PayBy = optional($customer)->FullName ?? 'Cash';
                 $tblchq->Dr = $cheque_amount;
                 $tblchq->RealiseDate = $cheque_date;
                 $tblchq->Ref = $invoice->invno;
@@ -364,7 +371,7 @@ class SalesController extends Controller
                 $tbl_gl->Date = $trn_date;
                 $tbl_gl->Acc = "Cheques In Hand";
                 $tbl_gl->AccCode = $narration_acc->ID;
-                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                 $tbl_gl->Reference = $invoice->invno;
                 $tbl_gl->ReferenceType = "Invoice";
                 $tbl_gl->Dr = $cheque_amount;
@@ -381,7 +388,7 @@ class SalesController extends Controller
                     $tbl_gl->Date = $trn_date;
                     $tbl_gl->Acc = $acc_selected->Acc;
                     $tbl_gl->AccCode = $acc_selected->ID;
-                    $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".$customer->FullName.")";
+                    $tbl_gl->Description = "Pharmacy Sales ( INV No : ".$invoice->invno.")(Customer : ".(optional($customer)->FullName ?? 'Cash').")";
                     $tbl_gl->Reference = $invoice->invno;
                     $tbl_gl->ReferenceType = "Invoice";
                     $tbl_gl->Dr = $credit_amount;
@@ -422,6 +429,7 @@ class SalesController extends Controller
     {
         $company = TblSahanyaCompany::first();
         $invoice = TblInvoice::where('invno', $invoice_number)->with('customer')->first();
+        // dd($invoice->invno);
 
         $invoice_body = TblInvoiceBody::where('invno', $invoice->invno)->get();
 
